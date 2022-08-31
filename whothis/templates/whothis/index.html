@@ -1,0 +1,71 @@
+<html>
+	<head></head>
+	<body>
+		
+		{% csrf_token %}
+		<h1>hey !</h1>
+		<button id="start-camera">Start Camera</button>
+		<video id="video" width="480" height="360" autoplay></video>
+		<button id="click-photo">Click Photo</button>
+		<canvas id="canvas" width="480" height="360"></canvas>
+		<h2>is this arnav ? : </h2><h1 id="whothis">idk abhi yaar</h1>
+		
+		<script>
+			const csrftoken = document.getElementsByName("csrfmiddlewaretoken")[0].value
+
+			let video = document.querySelector("#video");
+			let click_button = document.querySelector("#click-photo");
+			let canvas = document.querySelector("#canvas");
+			let activate_camera = document.querySelector("#start-camera");
+
+			initiateCamera = async () => {
+				let stream = await navigator.mediaDevices.getUserMedia({video : true, audio : false})
+				video.srcObject = stream;
+			}
+			
+			setUpClick = () => {
+				click_button.addEventListener('click', function() {
+					canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+					let image_data_url = canvas.toDataURL('image/png');
+					let blob = dataURLtoBlob(image_data_url)
+
+					assessBlob(blob)
+
+					// data url of the image
+					console.log(image_data_url);
+				});
+			}
+
+			function dataURLtoBlob(dataurl) {
+				var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+				bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+				
+				while(n--){
+					u8arr[n] = bstr.charCodeAt(n);
+				}
+
+				return new Blob([u8arr], {type:mime});
+			}
+
+			assessBlob = blob => {
+				fetch ('post/', {
+					method  : 'POST',
+					body    : blob,
+					headers : {
+						'X-CSRFToken' : csrftoken
+					}
+				}).
+				then  (response => response.text()).
+				then  (txt => document.getElementById("whothis").textContent = txt)
+			}
+
+			main = () => {
+				initiateCamera()
+				setUpClick()
+			}
+
+			main()
+
+		</script>
+	</body>
+</html>
