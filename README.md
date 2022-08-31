@@ -1,2 +1,2 @@
 # FaceRecognition
-recognises faces, more what
+recognises faces, what else
